@@ -7,7 +7,7 @@ app.use(express.static('public'));
 
 // Ruta para la página principal (index.html)
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Ruta para la página del casino (casino.html)
