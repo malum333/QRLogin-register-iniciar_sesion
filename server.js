@@ -12,12 +12,12 @@ app.get('/', (req, res) => {
 
 // Ruta para la página del casino (casino.html)
 app.get('/casino', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'casino.html'));
+    res.sendFile(path.join(__dirname, 'casino.html'));
 });
 
 // Ruta para la página del hotel (hotel.html)
 app.get('/hotel', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'hotel.html'));
+    res.sendFile(path.join(__dirname, 'hotel.html'));
 });
 
 // Iniciar el servidor en el puerto 3000
