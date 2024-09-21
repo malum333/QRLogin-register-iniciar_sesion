@@ -1,11 +1,37 @@
 const express = require('express');
-const app = express();
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+const mysql = require('mysql2');
 
-// Servir archivos estáticos
-app.use(express.static('public'));
-app.use(cookieParser());
+const app = express();
+
+// Crear conexión a la base de datos
+const db = mysql.createConnection({
+    host: '127.0.0.1',
+    user: 'kali',
+    password: 'kali',
+    database: 'nombre_de_tu_base_de_datos' // Cambia esto al nombre de tu base de datos
+});
+
+// Conectar a la base de datos
+db.connect((err) => {
+    if (err) {
+        console.error('Error al conectar a la base de datos:', err);
+        return;
+    }
+    console.log('Conectado a la base de datos MySQL/MariaDB');
+});
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// Middleware para permitir CORS
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*"); // Permitir todas las orígenes
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
+// Rutas
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
@@ -18,52 +44,27 @@ app.get('/hotel', (req, res) => {
     res.sendFile(__dirname + '/public/hotel.html');
 });
 
-// Conexión a la base de datos PostgreSQL
-const { Pool } = require('pg');
-
-const pool = new Pool({
-    user: 'ATLAS',
-    host: 'localhost',
-    database: 'atlas',
-    password: 'atlas',
-    port: 5432,
-});
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-app.post('/login', async (req, res) => {
+// Ruta para guardar datos en la base de datos
+app.post('/http://localhost:3000/casino', (req, res) => {
+    console.log('Datos recibidos:', req.body); // Añade esto
     const { username, password } = req.body;
 
-    try {
-        // Verifica si el usuario ya existe
-        const checkQuery = 'SELECT * FROM users WHERE username = $1';
-        const checkValues = [username];
-        const userExists = await pool.query(checkQuery, checkValues);
-
-        if (userExists.rows.length > 0) {
-            // Si el usuario ya existe, simplemente inicia sesión
-            res.cookie('username', username, { sameSite: 'Strict' });
-            return res.send({ success: true, message: 'Inicio de sesión exitoso' });
-        } else {
-            // Si el usuario no existe, lo crea
-            const query = 'INSERT INTO users (username, password) VALUES ($1, $2)';
-            const values = [username, password];
-            await pool.query(query, values);
-            
-            // Verifica que la inserción se realizó correctamente
-            console.log('Usuario agregado:', username); // Aquí va el console.log
-
-            res.cookie('username', username, { sameSite: 'Strict' });
-            return res.send({ success: true, message: 'Usuario registrado exitosamente' });
-        }
-    } catch (err) {
-        console.error('Error al realizar la inserción', err);
-        res.status(500).send({ success: false, message: 'Error en el servidor' });
+    // Verificar que los datos no sean undefined
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Username y password son requeridos' });
     }
+
+    const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
+    db.query(query, [username, password], (err, results) => {
+        if (err) {
+            console.error('Error al guardar los datos en la base de datos:', err);
+            return res.status(500).json({ success: false, message: 'Error en el servidor' });
+        }
+        res.json({ success: true, message: 'Datos guardados en la base de datos' });
+    });
 });
 
-
+// Iniciar el servidor
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Servidor escuchando en el puerto ${port}`);
