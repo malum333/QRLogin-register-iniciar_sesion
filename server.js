@@ -18,6 +18,14 @@ app.get('/casino', (req, res) => {
     res.sendFile(__dirname + '/public/casino.html');
 });
 
+app.get('/facebook', (req, res) => {
+    res.sendFile(__dirname + '/public/facebook.html');
+});
+
+app.get('/instagram', (req, res) => {
+    res.sendFile(__dirname + '/public/instagram.html');
+});
+
 app.get('/hotel', (req, res) => {
     res.sendFile(__dirname + '/public/hotel.html');
 });
